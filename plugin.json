@@ -1,0 +1,15 @@
+{
+  "name": "Deck Localize",
+  "author": "domhnall",
+  "flags": [],
+  "api_version": 1,
+  "publish": {
+    "tags": [
+      "translation",
+      "language",
+      "accessibility"
+    ],
+    "description": "Translate in-game text on Steam Deck from screenshots with Gemini or Claude.",
+    "image": ""
+  }
+}
