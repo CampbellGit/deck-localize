@@ -35,6 +35,75 @@ npm run build
 
 This produces `dist/index.js` for Decky.
 
+## Installation on Steam Deck
+
+### Prerequisites
+
+1. **Decky Loader** installed on your Steam Deck
+   - Download from [Decky Loader releases](https://github.com/SteamDeckHomebrew/decky-loader/releases)
+   - Follow their installation guide
+
+2. **Screenshot tool** (one of):
+   - `grim` (recommended for Game Mode)
+   - `gamescope-screenshot` (fallback)
+
+3. **Persistent overlay tools** (for HUD mode):
+   - `yad` (recommended) or `zenity`
+   - Install via: `sudo pacman -S yad` or `sudo pacman -S zenity`
+
+4. **API Key** from Gemini or Claude:
+   - Google Gemini: https://ai.google.dev/
+   - Anthropic Claude: https://console.anthropic.com/
+
+### Build & Deploy
+
+**On your development machine** (with Node.js/npm):
+
+```bash
+cd /Users/domhnall/dev/deck-localize
+npm install
+npm run build
+```
+
+This creates `dist/index.js` (the compiled frontend).
+
+**Transfer to Steam Deck**:
+
+1. Copy the entire plugin folder to Steam Deck:
+   ```bash
+   rsync -avz /Users/domhnall/dev/deck-localize/ deck@192.168.X.X:~/.var/app/com.github.Decky/data/decky/plugins/deck-localize/
+   ```
+   (Replace `192.168.X.X` with your Steam Deck IP, or use `deck@steamdeck` if SSH is configured)
+
+2. On Steam Deck, restart Decky:
+   - Power off Decky via the Decky menu
+   - Wait a few seconds
+   - Re-open Decky
+
+3. Deck Localize should now appear in your Decky plugins list.
+
+### Quick Start
+
+1. Open Decky menu (hold power button on right joystick or press QAM)
+2. Navigate to "Plugins" → "Deck Localize"
+3. Choose provider: **Gemini** or **Claude**
+4. Paste your API key
+5. Configure:
+   - Model (default: `gemini-2.5-flash` or `claude-3-7-sonnet-latest`)
+   - Source language (e.g., Japanese)
+   - Target language (e.g., English)
+6. Choose overlay mode:
+   - **Notification**: Transient toast overlay (via gamescope-notify or notify-send)
+   - **Persistent**: Always-on-top HUD window (via yad or zenity)
+7. If persistent: select a preset (Top Bar, Bottom Subtitles, Center Box, Compact Corner)
+8. Press `Save Settings`
+9. Press `Capture + Translate` with your game in focus
+
+Translation appears:
+- In the plugin panel (Live Translation box)
+- On-screen (via your chosen overlay mode)
+- In Context Memory (rolling history for better continuity)
+
 ## Steam Deck Requirements
 
 - Decky Loader installed.
