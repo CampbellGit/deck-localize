@@ -58,16 +58,16 @@ class Plugin:
         cfg_path.write_text(json.dumps(self._config, indent=2), encoding="utf-8")
 
     async def get_config(self) -> Dict[str, Any]:
-        return {**self._config, "api_key": "" if not self._config.get("api_key") else "***"}
+        return {**self._config, "api_key": "", "has_api_key": bool(self._config.get("api_key"))}
 
     async def set_config(
         self,
         provider: str,
-        api_key: str,
-        model: str,
-        source_language: str,
-        target_language: str,
-        max_context_items: int,
+        api_key: str = "",
+        model: str = "",
+        source_language: str = "Japanese",
+        target_language: str = "English",
+        max_context_items: int = 6,
         overlay_enabled: bool = True,
         overlay_mode: str = "notification",
         overlay_method: str = "auto",
@@ -75,21 +75,21 @@ class Plugin:
         persistent_preset: str = "bottom-subtitles",
     ) -> Dict[str, Any]:
         selected_preset = self._sanitize_persistent_preset(persistent_preset)
-        self._config.update(
-            {
-                "provider": provider,
-                "api_key": api_key,
-                "model": model,
-                "source_language": source_language,
-                "target_language": target_language,
-                "max_context_items": max(1, min(20, int(max_context_items))),
-                "overlay_enabled": bool(overlay_enabled),
-                "overlay_mode": str(overlay_mode or "notification"),
-                "overlay_method": str(overlay_method or "auto"),
-                "persistent_method": str(persistent_method or "auto"),
-                "persistent_preset": selected_preset,
-            }
-        )
+        update: Dict[str, Any] = {
+            "provider": provider,
+            "model": model,
+            "source_language": source_language,
+            "target_language": target_language,
+            "max_context_items": max(1, min(20, int(max_context_items))),
+            "overlay_enabled": bool(overlay_enabled),
+            "overlay_mode": str(overlay_mode or "notification"),
+            "overlay_method": str(overlay_method or "auto"),
+            "persistent_method": str(persistent_method or "auto"),
+            "persistent_preset": selected_preset,
+        }
+        if api_key:
+            update["api_key"] = api_key
+        self._config.update(update)
         if not self._config["overlay_enabled"] or self._config["overlay_mode"] != "persistent":
             await asyncio.to_thread(self._stop_persistent_overlay)
         self._context = deque(self._context, maxlen=self._config["max_context_items"])
@@ -192,7 +192,7 @@ class Plugin:
         target = self._config.get("target_language", "English")
 
         context_lines = []
-        for item in list(self._context)[-self._config.get("max_context_items", 6) :]:
+        for item in self._context:
             context_lines.append(f"- {item['translation']}")
 
         historical = "\n".join(context_lines) if context_lines else "- No prior context"

@@ -12,6 +12,7 @@ import { ReactElement, useEffect, useState } from "react";
 type ConfigResult = {
   provider: "gemini" | "claude";
   api_key: string;
+  has_api_key: boolean;
   model: string;
   source_language: string;
   target_language: string;
@@ -40,6 +41,7 @@ type TranslateResult = {
 function TranslationPanel({ serverAPI }: { serverAPI: ServerAPI }): ReactElement {
   const [provider, setProvider] = useState<"gemini" | "claude">("gemini");
   const [apiKey, setApiKey] = useState("");
+  const [hasApiKey, setHasApiKey] = useState(false);
   const [model, setModel] = useState("gemini-2.5-flash");
   const [sourceLanguage, setSourceLanguage] = useState("Japanese");
   const [targetLanguage, setTargetLanguage] = useState("English");
@@ -61,6 +63,7 @@ function TranslationPanel({ serverAPI }: { serverAPI: ServerAPI }): ReactElement
       const cfg = await serverAPI.callPluginMethod<unknown, ConfigResult>("get_config", {});
       if (cfg.success && cfg.result) {
         setProvider(cfg.result.provider ?? "gemini");
+        setHasApiKey(cfg.result.has_api_key ?? false);
         setModel(cfg.result.model ?? "gemini-2.5-flash");
         setSourceLanguage(cfg.result.source_language ?? "Japanese");
         setTargetLanguage(cfg.result.target_language ?? "English");
@@ -82,9 +85,8 @@ function TranslationPanel({ serverAPI }: { serverAPI: ServerAPI }): ReactElement
   async function saveConfig(): Promise<void> {
     setError("");
 
-    await serverAPI.callPluginMethod("set_config", {
+    const payload: Record<string, unknown> = {
       provider,
-      api_key: apiKey,
       model,
       source_language: sourceLanguage,
       target_language: targetLanguage,
@@ -94,7 +96,16 @@ function TranslationPanel({ serverAPI }: { serverAPI: ServerAPI }): ReactElement
       overlay_method: overlayMethod,
       persistent_method: persistentMethod,
       persistent_preset: persistentPreset,
-    });
+    };
+    if (apiKey) {
+      payload.api_key = apiKey;
+    }
+
+    const result = await serverAPI.callPluginMethod("set_config", payload);
+    if (result.success && apiKey) {
+      setHasApiKey(true);
+      setApiKey("");
+    }
   }
 
   async function closePersistentOverlay(): Promise<void> {
@@ -203,7 +214,7 @@ function TranslationPanel({ serverAPI }: { serverAPI: ServerAPI }): ReactElement
           )}
 
           <TextField
-            label="API Key"
+            label={hasApiKey ? "API Key (saved — enter new key to replace)" : "API Key"}
             value={apiKey}
             onChange={setApiKey}
           />
@@ -242,7 +253,7 @@ function TranslationPanel({ serverAPI }: { serverAPI: ServerAPI }): ReactElement
 
           <div style={{ marginTop: "12px" }}>
             <ButtonItem layout="below" onClick={() => setOverlayVisible((v) => !v)}>
-              {overlayVisible ? "Hide Overlay" : "Show Overlay"}
+              {overlayVisible ? "Hide Panel Translation" : "Show Panel Translation"}
             </ButtonItem>
           </div>
 
