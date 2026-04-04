@@ -6,11 +6,14 @@ const ctx = await esbuild.context({
   entryPoints: ["src/index.tsx"],
   outfile: "dist/index.js",
   bundle: true,
-  format: "esm",
+  format: "iife",
   platform: "browser",
   target: ["es2020"],
   sourcemap: true,
   external: ["react", "react-dom", "decky-frontend-lib"],
+  banner: {
+    js: "var React = window.SP_REACT; var ReactDOM = window.SP_REACTDOM;",
+  },
   loader: {
     ".ts": "ts",
     ".tsx": "tsx"

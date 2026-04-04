@@ -1,6 +1,7 @@
 {
   "name": "Deck Localize",
   "author": "domhnall",
+  "version": "0.1.0",
   "flags": [],
   "api_version": 1,
   "publish": {
